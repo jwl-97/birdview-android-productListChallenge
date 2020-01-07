@@ -16,33 +16,38 @@
 
         <FrameLayout
             android:id="@+id/layout_searchView"
-            android:layout_width="380dp"
+            android:layout_width="370dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:paddingTop="9dp"
-            android:paddingBottom="9dp">
+            android:layout_marginTop="9dp"
+            android:layout_marginBottom="9dp">
 
             <androidx.appcompat.widget.SearchView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
                 android:background="@drawable/searchview_corner"
+
                 app:iconifiedByDefault="false"
                 app:queryBackground="@android:color/transparent"
                 app:queryHint="@string/search_text" />
         </FrameLayout>
     </androidx.appcompat.widget.Toolbar>
 
-    <ScrollView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rec_product_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:layout_weight="4"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:spanCount="2" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rec_product_list"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="20dp"
-            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-            app:spanCount="2" />
-    </ScrollView>
+    <ProgressBar
+        android:id="@+id/prog_loding"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_weight="0.1"
+        android:indeterminateDrawable="@drawable/ic_custom_rotating_progress"
+        android:visibility="gone" />
 </LinearLayout>

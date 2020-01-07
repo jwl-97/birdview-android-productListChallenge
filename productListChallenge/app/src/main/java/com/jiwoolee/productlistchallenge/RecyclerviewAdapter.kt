@@ -3,18 +3,18 @@ package com.jiwoolee.productlistchallenge
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.jiwoolee.productlistchallenge.retrofit.ProductData
-import java.util.ArrayList
+import androidx.annotation.NonNull
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.jiwoolee.productlistchallenge.retrofit.ProductData
 import kotlinx.android.synthetic.main.recyclerview_item.view.*
+import java.util.*
 
 class RecyclerviewAdapter : RecyclerView.Adapter<RecyclerviewAdapter.MyViewHolder>() {
     private val listData = ArrayList<ProductData>()
 
-    override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): MyViewHolder {
-        val view = LayoutInflater.from(viewGroup.context)
-            .inflate(R.layout.recyclerview_item, viewGroup, false)
+    override fun onCreateViewHolder(@NonNull parent: ViewGroup, viewType: Int): MyViewHolder {
+        val view: View = LayoutInflater.from(parent.context).inflate(R.layout.recyclerview_item, parent, false)
         return MyViewHolder(view)
     }
 

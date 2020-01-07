@@ -9,5 +9,5 @@ import retrofit2.http.*
 
 interface IMyService {
     @GET("products")
-    fun pagingList(@Query("skin_type") skin_type: String): Observable<String>
+    fun pagingList(@Query("skin_type") skin_type: String, @Query("page") page: Int): Observable<String>
 }

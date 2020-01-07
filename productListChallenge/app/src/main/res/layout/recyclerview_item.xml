@@ -1,38 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="235dp"
-    android:layout_marginBottom="5dp"
-    android:background="@android:color/white"
-    android:gravity="center_vertical"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="7dp"
     android:layout_marginLeft="7dp"
-    android:orientation="vertical"
+    android:layout_marginBottom="5dp"
     android:layout_weight="1"
-    android:layout_marginStart="7dp">
+    android:background="@color/white"
+    android:gravity="center_vertical"
+    android:orientation="vertical">
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/tv_product_thumnail"
         android:layout_width="172dp"
         android:layout_height="172dp"
+        android:layout_marginTop="2dp"
         android:adjustViewBounds="true"
         android:background="@drawable/thumbnail_corner"
-        android:padding="10dp"
-        app:srcCompat="@mipmap/ic_launcher_round" />
+        android:padding="10dp" />
 
-    <TextView
-        android:id="@+id/tv_product_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:includeFontPadding="false"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="24dp"
         android:layout_weight="1"
-        android:text="1" />
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tv_product_price"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:includeFontPadding="false"
-        android:layout_weight="1"
-        android:text="1" />
+        <TextView
+            android:id="@+id/tv_product_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="2"
+
+            android:text="1"
+            android:textColor="@color/black"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_product_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:text="1"
+            android:textColor="@color/gray"
+            android:textStyle="bold" />
+    </LinearLayout>
 </LinearLayout>
