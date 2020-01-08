@@ -26,7 +26,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/searchview_corner"
-
                 app:iconifiedByDefault="false"
                 app:queryBackground="@android:color/transparent"
                 app:queryHint="@string/search_text" />
@@ -36,18 +35,10 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rec_product_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="20dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
         android:layout_weight="4"
+        android:layout_margin="12dp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="2" />
-
-    <ProgressBar
-        android:id="@+id/prog_loding"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_weight="0.1"
-        android:indeterminateDrawable="@drawable/ic_custom_rotating_progress"
-        android:visibility="gone" />
 </LinearLayout>

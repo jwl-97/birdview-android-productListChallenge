@@ -6,9 +6,12 @@ import android.os.Bundle
 import android.os.Handler
 import android.view.View
 import android.widget.AbsListView
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.setMargins
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
@@ -17,12 +20,14 @@ import com.jiwoolee.productlistchallenge.retrofit.ProductData
 import com.jiwoolee.productlistchallenge.retrofit.RetrofitClient
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.internal.util.HalfSerializer.onNext
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import retrofit2.Retrofit
+import java.lang.Exception
 import java.text.DecimalFormat
 
 class MainActivity : AppCompatActivity() {
@@ -35,7 +40,6 @@ class MainActivity : AppCompatActivity() {
 
     private var pageCount: Int = 1
     private var isLastItem = false
-    private lateinit var progressBar: ProgressBar
 
     companion object {
         @SuppressLint("StaticFieldLeak")
@@ -49,7 +53,6 @@ class MainActivity : AppCompatActivity() {
 
         initToolbar()
         pageCount = 1
-        progressBar = findViewById(R.id.prog_loding)
 
         val recyclerView: RecyclerView = findViewById<View>(R.id.rec_product_list) as RecyclerView
         setRecyclerview(recyclerView)
@@ -64,7 +67,6 @@ class MainActivity : AppCompatActivity() {
     private fun setRecyclerview(recyclerview: RecyclerView) {
         initRecyclerview(recyclerview)
         getProductList("oily", pageCount)
-        adapter!!.notifyDataSetChanged()
     }
 
     private fun setRecyclerViewScrollListener(recyclerView: RecyclerView) {
@@ -72,13 +74,11 @@ class MainActivity : AppCompatActivity() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, scrollState: Int) {
                 super.onScrollStateChanged(recyclerView, scrollState)
                 if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE && isLastItem) {
-                    progressBar.visibility = View.VISIBLE
-
                     Handler().postDelayed(Runnable {
                         pageCount++
                         getProductList("oily", pageCount)
-                        progressBar.visibility = View.GONE
-                    }, 1000)
+                    }, 500)
+                    isLastItem = false
                 }
             }
 
@@ -89,7 +89,8 @@ class MainActivity : AppCompatActivity() {
                     recyclerView.layoutManager as LinearLayoutManager?
                 if (!isLastItem) {
                     val totalItemCount: Int = linearLayoutManager!!.itemCount
-                    val lastVisible: Int = linearLayoutManager.findLastCompletelyVisibleItemPosition()
+                    val lastVisible: Int =
+                        linearLayoutManager.findLastCompletelyVisibleItemPosition()
                     isLastItem = (totalItemCount > 0) && (lastVisible >= totalItemCount - 1)
                 }
             }
@@ -97,16 +98,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initRecyclerview(recyclerview: RecyclerView) {
-        recyclerview.layoutManager = GridLayoutManager(this, 2) //한 줄에 상품 2개씩 정렬
+        val manager = GridLayoutManager(this, 2)
+        manager.spanSizeLookup = object : SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int =
+                if (adapter!!.getItemViewType(position) == TYPE_ITEM) {
+                    1
+                } else {
+                    2
+                }
+        }
+
+        recyclerview.layoutManager = manager
 
         adapter = RecyclerviewAdapter()
         recyclerview.adapter = adapter
     }
 
+
     private fun getProductList(skin_type: String, page: Int) {
         disposable!!.add(iMyService!!.pagingList(skin_type, page)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+            .retry()
             .subscribe { response ->
                 val listArray: JSONArray = JSONObject(response).getJSONArray("body")
                 parsingProductList(listArray)
@@ -114,7 +127,7 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun parsingProductList(listArray: JSONArray) = try {
+    private fun parsingProductList(listArray: JSONArray) {
         for (i in 0 until listArray.length()) {
             val data = ProductData()
             val listObject = listArray.getJSONObject(i)
@@ -127,9 +140,9 @@ class MainActivity : AppCompatActivity() {
             ) + "원"
             adapter!!.addItem(data)
         }
-        adapter!!.notifyDataSetChanged()
-    } catch (e: JSONException) {
-        e.printStackTrace()
+        Handler().postDelayed(Runnable {
+            adapter!!.notifyDataSetChanged()
+        }, 500)
     }
 
     //상품 가격 세자리수 콤마
