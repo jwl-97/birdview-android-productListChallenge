@@ -38,7 +38,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="center"
         android:layout_weight="4"
-        android:layout_margin="12dp"
+        android:layout_margin="18dp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="2" />
 </LinearLayout>

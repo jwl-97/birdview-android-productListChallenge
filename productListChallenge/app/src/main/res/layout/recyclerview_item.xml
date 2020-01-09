@@ -8,7 +8,7 @@
     android:orientation="vertical">
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/tv_product_thumnail"
+        android:id="@+id/iv_product_thumnail"
         android:layout_width="172dp"
         android:layout_height="172dp"
         android:layout_marginTop="2dp"

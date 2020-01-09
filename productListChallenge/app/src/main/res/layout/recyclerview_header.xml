@@ -7,7 +7,7 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:gravity="center"
-        android:text="안녕"
+        android:text="header"
         android:textColor="@color/black"
         android:background="@color/white" />
 </LinearLayout>
