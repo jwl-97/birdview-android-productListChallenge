@@ -74,7 +74,9 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
 
     private fun setRecyclerview(recyclerview: RecyclerView) {
         initRecyclerview(recyclerview)
-        getProductList(defaultSkinType, pageCount)
+        Handler().postDelayed(Runnable {
+            getProductList(defaultSkinType, pageCount)
+        }, 100)
     }
 
     private fun initRecyclerview(recyclerview: RecyclerView) {
@@ -100,7 +102,6 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
         disposable!!.add(
             iMyService!!.pagingList(skin_type, page)
                 .subscribeOn(Schedulers.io())
-
                 .observeOn(AndroidSchedulers.mainThread())
                 .timeout(1, TimeUnit.SECONDS)
                 .retry()
@@ -165,10 +166,8 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
             override fun onScrollStateChanged(recyclerView: RecyclerView, scrollState: Int) {
                 super.onScrollStateChanged(recyclerView, scrollState)
                 if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE && isLastItem) { //스크롤이 멈춰있고 마지막 아이템일 때
-                    Handler().postDelayed(Runnable {
-                        pageCount++
-                        getProductList(defaultSkinType, pageCount) //다음 페이지의 아이템 로드해 오기
-                    }, 500)
+                    pageCount++
+                    getProductList(defaultSkinType, pageCount) //다음 페이지의 아이템 로드해 오기
                     isLastItem = false
                 }
             }
