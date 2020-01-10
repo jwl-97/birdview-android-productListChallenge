@@ -110,9 +110,9 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
                 .subscribe { response ->
                     val listArray: JSONArray = JSONObject(response).getJSONArray("body")
                     parsingProductList(listArray)
-                    disposable?.clear()
+//                    disposable?.clear()
                 })
-
+        adapter!!.notifyDataSetChanged()
     }
 
     private fun parsingProductList(listArray: JSONArray) = try {
