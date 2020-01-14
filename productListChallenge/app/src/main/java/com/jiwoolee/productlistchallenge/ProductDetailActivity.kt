@@ -12,9 +12,13 @@ class ProductDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_product_detail)
 
+        setData()
+    }
+
+    private fun setData(){
         val productData: ProductData = intent.extras!!.get("productData") as ProductData
-        findViewById<TextView>(R.id.tv_detail_product_title).text = productData.productTitle
-        findViewById<TextView>(R.id.tv_detail_product_price).text = productData.productPrice
+        tv_detail_product_title.text = productData.productTitle
+        tv_detail_product_price.text = productData.productPrice
 
         Glide.with(iv_detail_product_thumbnail.context)
             .load(productData.thumbnailImage)
