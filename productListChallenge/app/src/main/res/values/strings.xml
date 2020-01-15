@@ -12,4 +12,5 @@ Nunc vehicula\n\n venenatis odio, vitae sagittis lacus suscipit quis. Nullam pha
 Sed eget lobortis sem. Curabitur viverra eu nisi eget pretium. Cras feugiat nulla sit amet lacinia mollis. Etiam placerat nec ex at aliquam. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Curabitur et pretium nulla. Nulla at mauris a nunc tincidunt tincidunt eget eget eros. Quisque ac est vitae eros imperdiet condimentum eu porta orci.</string>
     <string name="product_terms">부랑구마켓은 통신판매중개자이며 통신판매의 당사자가 아닙니다. 따라서 부랑구마켓은 상품 거래정보 및 거래에 대하여 책임을 지지 않습니다.</string>
     <string name="appbar_scrolling_view_behavior" translatable="false">com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior</string>
+    <string name="buy_text">구매하기</string>
 </resources>

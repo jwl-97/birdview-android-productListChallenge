@@ -1,7 +1,6 @@
 package com.jiwoolee.productlistchallenge
 
 import android.os.Bundle
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.jiwoolee.productlistchallenge.retrofit.ProductData
@@ -24,5 +23,7 @@ class ProductDetailActivity : AppCompatActivity() {
             .load(productData.thumbnailImage)
             .fitCenter()
             .into(iv_detail_product_thumbnail)
+
+        btn_cancel.setOnClickListener { finish() }
     }
 }

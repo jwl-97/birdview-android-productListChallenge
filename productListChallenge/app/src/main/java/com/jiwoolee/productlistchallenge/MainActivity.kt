@@ -89,11 +89,14 @@ class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnIte
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
-                val linearLayoutManager: LinearLayoutManager? = recyclerView.layoutManager as LinearLayoutManager?
+                val linearLayoutManager: LinearLayoutManager? =
+                    recyclerView.layoutManager as LinearLayoutManager?
                 if (!isLastItem) {
                     val totalItemCount: Int = linearLayoutManager!!.itemCount
-                    val lastVisible: Int = linearLayoutManager.findLastCompletelyVisibleItemPosition()
-                    isLastItem = (totalItemCount > 0) && (lastVisible >= totalItemCount - 1) // 마지막 아이템인지 판단
+                    val lastVisible: Int =
+                        linearLayoutManager.findLastCompletelyVisibleItemPosition()
+                    isLastItem =
+                        (totalItemCount > 0) && (lastVisible >= totalItemCount - 1) // 마지막 아이템인지 판단
                 }
             }
 
@@ -175,7 +178,11 @@ class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnIte
     스피너
      */
     private fun setSpinner() {
-        val myAdapter = ArrayAdapter(mContext, android.R.layout.simple_spinner_dropdown_item, resources.getStringArray(R.array.spinner_array))
+        val myAdapter = ArrayAdapter(
+            mContext,
+            android.R.layout.simple_spinner_dropdown_item,
+            resources.getStringArray(R.array.spinner_array)
+        )
         spinner_skintype.adapter = myAdapter
         spinner_skintype.onItemSelectedListener = this
     }
@@ -204,6 +211,7 @@ class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnIte
         val intent = Intent(this, ProductDetailActivity::class.java)
         intent.putExtra("productData", productData as Serializable)
         startActivity(intent)
+        overridePendingTransition(R.anim.slide_up, R.anim.normal)
     }
 
     override fun onStop() {
