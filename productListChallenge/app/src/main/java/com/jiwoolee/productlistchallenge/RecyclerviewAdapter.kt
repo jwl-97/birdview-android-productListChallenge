@@ -3,6 +3,8 @@ package com.jiwoolee.productlistchallenge
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Filter
+import android.widget.Filterable
 import androidx.annotation.NonNull
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
@@ -14,8 +16,10 @@ import java.util.*
 const val TYPE_ITEM = 1
 const val TYPE_FOOTER = 2
 
-class RecyclerviewAdapter(private val itemClickListener: OnItemClickListener) : RecyclerView.Adapter<ViewHolder>(){
-    private val listData = ArrayList<ProductData>()
+class RecyclerviewAdapter(private val itemClickListener: OnItemClickListener) : RecyclerView.Adapter<ViewHolder>(),
+    Filterable {
+    private var listData = ArrayList<ProductData>()
+    var unFilteredlist: ArrayList<ProductData> = listData
 
     override fun onCreateViewHolder(@NonNull parent: ViewGroup, viewType: Int): ViewHolder {
         return when (viewType) {
@@ -62,6 +66,33 @@ class RecyclerviewAdapter(private val itemClickListener: OnItemClickListener) : 
 
     override fun getItemCount(): Int {
         return listData.size + 1
+    }
+
+    override fun getFilter(): Filter {
+        return object : Filter() {
+            override fun performFiltering(charSequence: CharSequence): FilterResults {
+                val charString = charSequence.toString()
+                if (charString.isEmpty()) {
+                    val listData = unFilteredlist
+                } else {
+                    val filteredList = ArrayList<ProductData>()
+                    for (name in unFilteredlist) {
+                        if (name.productTitle.toLowerCase().contains(charString.toLowerCase())) {
+                            filteredList.add(name)
+                        }
+                    }
+                    listData = filteredList
+                }
+                val filterResults = FilterResults()
+                filterResults.values = listData
+                return filterResults
+            }
+
+            override fun publishResults(charSequence: CharSequence, filterResults: FilterResults) {
+                listData = filterResults.values as ArrayList<ProductData>
+                notifyDataSetChanged()
+            }
+        }
     }
 }
 

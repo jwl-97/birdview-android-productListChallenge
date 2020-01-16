@@ -5,12 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.View
-import android.widget.AbsListView
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -34,12 +33,13 @@ import java.util.concurrent.TimeUnit
 class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnItemSelectedListener {
     private var disposable: CompositeDisposable? = CompositeDisposable() //retrofit 통신
     private var retrofitClient = RetrofitClient.getInstance()
-    private var iMyService: IMyService? =
-        (retrofitClient as Retrofit).create(IMyService::class.java)
+    private var iMyService: IMyService? = (retrofitClient as Retrofit).create(IMyService::class.java)
 
     private var defaultSkinType: String = "oily"
     private var pageCount: Int = 1
-    private var isLastItem = false
+    private var isLastItem: Boolean = false
+    private var isFirst: Boolean = false
+    private var isQuery: Boolean = false
 
     private var adapter: RecyclerviewAdapter? = null
 
@@ -54,7 +54,8 @@ class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnIte
         mContext = this
 
         initToolbar()
-        pageCount = 1
+        isFirst = true
+        isQuery = false
 
         setRecyclerview()
         setSpinner()
@@ -63,6 +64,21 @@ class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnIte
     private fun initToolbar() {
         setSupportActionBar(toolbar)
         supportActionBar!!.setDisplayShowTitleEnabled(false)
+
+        val searchView = findViewById<SearchView>(R.id.searchview)
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                isQuery = true
+                initRecyclerview()
+                queryProduct("oily", query!!)
+                return false
+            }
+
+            override fun onQueryTextChange(query: String?): Boolean {
+                adapter!!.filter.filter(query)
+                return false
+            }
+        })
     }
 
     /*
@@ -93,16 +109,14 @@ class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnIte
                     recyclerView.layoutManager as LinearLayoutManager?
                 if (!isLastItem) {
                     val totalItemCount: Int = linearLayoutManager!!.itemCount
-                    val lastVisible: Int =
-                        linearLayoutManager.findLastCompletelyVisibleItemPosition()
-                    isLastItem =
-                        (totalItemCount > 0) && (lastVisible >= totalItemCount - 1) // 마지막 아이템인지 판단
+                    val lastVisible: Int = linearLayoutManager.findLastCompletelyVisibleItemPosition()
+                    isLastItem = (totalItemCount > 0) && (lastVisible >= totalItemCount - 1) // 마지막 아이템인지 판단
                 }
             }
 
             override fun onScrollStateChanged(recyclerView: RecyclerView, scrollState: Int) {
                 super.onScrollStateChanged(recyclerView, scrollState)
-                if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE && isLastItem) { //스크롤이 멈춰있고 마지막 아이템일 때
+                if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE && isLastItem && !isQuery) { //스크롤이 멈춰있고 마지막 아이템일 때
                     pageCount++
                     recyclerView.isNestedScrollingEnabled = false //리사이클러뷰 스크롤 막기
 
@@ -141,9 +155,28 @@ class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnIte
                 }
                 .subscribe { response ->
                     val listArray: JSONArray = JSONObject(response).getJSONArray("body")
+                    Log.d("ljwLog-list", listArray.toString()) ///////////////////
                     parsingProductList(listArray)
-//                    disposable?.clear()
                 })
+        adapter!!.notifyDataSetChanged()
+//        disposable?.clear()
+    }
+
+    private fun queryProduct(skin_type: String, search: String) {
+        disposable!!.add(iMyService!!.queryProduct(skin_type, search)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .timeout(1, TimeUnit.SECONDS)
+            .retry()
+            .doOnError {
+                Toast.makeText(this, "doOnError", Toast.LENGTH_SHORT).show()
+            }
+            .subscribe { response ->
+                val listArray: JSONArray = JSONObject(response).getJSONArray("body")
+                Log.d("ljwLog-query", listArray.toString()) ///////////////////
+                parsingProductList(listArray)
+            }
+        )
         adapter!!.notifyDataSetChanged()
     }
 
@@ -155,10 +188,7 @@ class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnIte
             data.productTitle = listObject.getString("title")
             data.productPrice = makeCommaForNumber(
                 Integer.parseInt(
-                    listObject.getString("price").toString().replace(
-                        ",",
-                        ""
-                    )
+                    listObject.getString("price").toString().replace(",", "")
                 )
             ) + "원"
             adapter!!.addItem(data)
@@ -189,10 +219,17 @@ class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnIte
 
     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
         when (position) {
-            0 -> sortBySkinType("oily")
+            0 -> {
+                if (!isFirst) {
+                    sortBySkinType("oily")
+                } else {
+                    isFirst = false
+                }
+            }
             1 -> sortBySkinType("dry")
             2 -> sortBySkinType("sensitive")
         }
+        isQuery = false
         spinner_skintype.setSelection(position)
     }
 
