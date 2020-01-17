@@ -64,6 +64,9 @@ class RecyclerviewAdapter(private val itemClickListener: OnItemClickListener) : 
         listData.add(productData)
     }
 
+    fun removeItem(){
+        listData.clear()
+    }
     override fun getItemCount(): Int {
         return listData.size + 1
     }
@@ -72,8 +75,8 @@ class RecyclerviewAdapter(private val itemClickListener: OnItemClickListener) : 
         return object : Filter() {
             override fun performFiltering(charSequence: CharSequence): FilterResults {
                 val charString = charSequence.toString()
-                if (charString.isEmpty()) {
-                    val listData = unFilteredlist
+                if (charString.isEmpty()) { //아무것도 입력하지 않았거나 입력내용을 지운 경우
+                    listData = unFilteredlist
                 } else {
                     val filteredList = ArrayList<ProductData>()
                     for (name in unFilteredlist) {

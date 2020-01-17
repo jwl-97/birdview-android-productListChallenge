@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.view.Menu
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import com.jiwoolee.productlistchallenge.retrofit.IMyService
 import com.jiwoolee.productlistchallenge.retrofit.ProductData
 import com.jiwoolee.productlistchallenge.retrofit.RetrofitClient
+import com.jiwoolee.productlistchallenge.retrofit.SharedPreferenceManager
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -30,18 +32,19 @@ import java.io.Serializable
 import java.text.DecimalFormat
 import java.util.concurrent.TimeUnit
 
-class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnItemSelectedListener {
+class MainActivity : AppCompatActivity(), OnItemClickListener {
     private var disposable: CompositeDisposable? = CompositeDisposable() //retrofit 통신
     private var retrofitClient = RetrofitClient.getInstance()
     private var iMyService: IMyService? = (retrofitClient as Retrofit).create(IMyService::class.java)
+
+    private lateinit var recyclerView: RecyclerView
+    private var adapter: RecyclerviewAdapter? = null
 
     private var defaultSkinType: String = "oily"
     private var pageCount: Int = 1
     private var isLastItem: Boolean = false
     private var isFirst: Boolean = false
     private var isQuery: Boolean = false
-
-    private var adapter: RecyclerviewAdapter? = null
 
     companion object {
         @SuppressLint("StaticFieldLeak")
@@ -57,20 +60,27 @@ class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnIte
         isFirst = true
         isQuery = false
 
+        recyclerView = findViewById<View>(R.id.rec_product_list) as RecyclerView
         setRecyclerview()
         setSpinner()
     }
 
+    /*
+    툴바
+     */
     private fun initToolbar() {
         setSupportActionBar(toolbar)
         supportActionBar!!.setDisplayShowTitleEnabled(false)
+    }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         val searchView = findViewById<SearchView>(R.id.searchview)
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 isQuery = true
-                initRecyclerview()
-                queryProduct("oily", query!!)
+                adapter!!.removeItem()
+                queryProduct(defaultSkinType, query!!)
+                SharedPreferenceManager.setBoolean(mContext, "querySubmit", true)
                 return false
             }
 
@@ -79,6 +89,23 @@ class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnIte
                 return false
             }
         })
+
+        searchView.setIconifiedByDefault(false)
+        val closeButton = searchView.findViewById<ImageView>(R.id.search_close_btn) //searchview의 x 버튼
+        closeButton.setOnClickListener {
+            if (SharedPreferenceManager.getBoolean(mContext, "querySubmit")) { //submit 상태에서 x버튼 클릭 시
+                pageCount = 1
+                adapter!!.removeItem()                      //리스트를 다시 받아와 갱신시킨다
+                getProductList(defaultSkinType, pageCount)
+
+                SharedPreferenceManager.setBoolean(mContext, "querySubmit", false)
+                isQuery = false
+            } else {                                        //change 상태에서 x버튼 클릭 시
+                adapter!!.filter.filter("")      //이전데이터를 보여준다
+            }
+            searchView.setQuery("", false)
+        }
+        return super.onCreateOptionsMenu(menu)
     }
 
     /*
@@ -92,7 +119,6 @@ class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnIte
     }
 
     private fun initRecyclerview() {
-        val recyclerView = findViewById<View>(R.id.rec_product_list) as RecyclerView
         recyclerView.layoutManager = devideRecyclerviewLayoutForType()
 
         adapter = RecyclerviewAdapter(this)
@@ -105,8 +131,7 @@ class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnIte
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
-                val linearLayoutManager: LinearLayoutManager? =
-                    recyclerView.layoutManager as LinearLayoutManager?
+                val linearLayoutManager: LinearLayoutManager? = recyclerView.layoutManager as LinearLayoutManager?
                 if (!isLastItem) {
                     val totalItemCount: Int = linearLayoutManager!!.itemCount
                     val lastVisible: Int = linearLayoutManager.findLastCompletelyVisibleItemPosition()
@@ -143,6 +168,9 @@ class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnIte
         return manager
     }
 
+    /*
+    retrofit 통신 && 파싱
+     */
     private fun getProductList(skin_type: String, page: Int) {
         disposable!!.add(
             iMyService!!.pagingList(skin_type, page)
@@ -159,7 +187,6 @@ class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnIte
                     parsingProductList(listArray)
                 })
         adapter!!.notifyDataSetChanged()
-//        disposable?.clear()
     }
 
     private fun queryProduct(skin_type: String, search: String) {
@@ -214,33 +241,34 @@ class MainActivity : AppCompatActivity(), OnItemClickListener, AdapterView.OnIte
             resources.getStringArray(R.array.spinner_array)
         )
         spinner_skintype.adapter = myAdapter
-        spinner_skintype.onItemSelectedListener = this
-    }
-
-    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        when (position) {
-            0 -> {
-                if (!isFirst) {
-                    sortBySkinType("oily")
-                } else {
-                    isFirst = false
+        spinner_skintype.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+                when (position) {
+                    0 -> {
+                        if (!isFirst) {
+                            sortBySkinType("oily")
+                        } else {
+                            isFirst = false
+                        }
+                    }
+                    1 -> sortBySkinType("dry")
+                    2 -> sortBySkinType("sensitive")
                 }
+                isQuery = false
+                spinner_skintype.setSelection(position)
             }
-            1 -> sortBySkinType("dry")
-            2 -> sortBySkinType("sensitive")
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+
+            }
         }
-        isQuery = false
-        spinner_skintype.setSelection(position)
-    }
-
-    override fun onNothingSelected(parent: AdapterView<*>?) {
-
     }
 
     private fun sortBySkinType(skin_type: String) {
         pageCount = 1
         defaultSkinType = skin_type
-        setRecyclerview()
+        adapter!!.removeItem()
+        getProductList(defaultSkinType, pageCount)
     }
 
     //recyclerview item 클릭시 ProductDetailActivity로 productData 옮겨주는 listener
