@@ -10,6 +10,8 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.bumptech.glide.Glide
 import com.jiwoolee.productlistchallenge.retrofit.ProductData
+import com.jiwoolee.productlistchallenge.retrofit.SharedPreferenceManager
+import kotlinx.android.synthetic.main.recyclerview_footer.view.*
 import kotlinx.android.synthetic.main.recyclerview_item.view.*
 import java.util.*
 
@@ -42,6 +44,9 @@ class RecyclerviewAdapter(private val itemClickListener: OnItemClickListener) : 
         if (holder is MyViewHolder) {
             val itemViewHolder: MyViewHolder = holder
             itemViewHolder.onBind(listData[position], itemClickListener)
+        } else if(holder is FooterViewHolder){
+            val itemViewHolder: FooterViewHolder = holder
+            itemViewHolder.onBind()
         }
     }
 
@@ -58,7 +63,15 @@ class RecyclerviewAdapter(private val itemClickListener: OnItemClickListener) : 
         }
     }
 
-    internal class FooterViewHolder(footerView: View?) : ViewHolder(footerView!!)
+    class FooterViewHolder internal constructor(itemView: View) : ViewHolder(itemView) {
+        internal fun onBind() {
+            if(SharedPreferenceManager.getBoolean(MainActivity.mContext, "noShowProgress")){
+                itemView.iv_footer_progress.visibility = View.GONE
+            }else{
+                itemView.iv_footer_progress.visibility = View.VISIBLE
+            }
+        }
+    }
 
     fun addItem(productData: ProductData) {
         listData.add(productData)

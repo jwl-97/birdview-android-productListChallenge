@@ -81,11 +81,14 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
                 adapter!!.removeItem()
                 queryProduct(defaultSkinType, query!!)
                 SharedPreferenceManager.setBoolean(mContext, "querySubmit", true)
+                SharedPreferenceManager.setBoolean(mContext, "noShowProgress", true)
                 return false
             }
 
             override fun onQueryTextChange(query: String?): Boolean {
-                adapter!!.filter.filter(query)
+//                adapter!!.filter.filter(query)
+//                SharedPreferenceManager.setBoolean(mContext, "noShowProgress", true)
+//                Log.d("ljwLog_change", SharedPreferenceManager.getBoolean(mContext, "noShowProgress").toString())
                 return false
             }
         })
@@ -103,6 +106,7 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
             } else {                                        //change 상태에서 x버튼 클릭 시
                 adapter!!.filter.filter("")      //이전데이터를 보여준다
             }
+            SharedPreferenceManager.setBoolean(mContext, "noShowProgress", false)
             searchView.setQuery("", false)
         }
         return super.onCreateOptionsMenu(menu)
