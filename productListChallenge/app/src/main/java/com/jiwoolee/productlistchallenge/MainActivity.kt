@@ -39,9 +39,11 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
 
     private lateinit var recyclerView: RecyclerView
     private var adapter: RecyclerviewAdapter? = null
+    private lateinit var searchView: SearchView
 
     private var defaultSkinType: String = "oily"
     private var pageCount: Int = 1
+
     private var isLastItem: Boolean = false
     private var isFirst: Boolean = false
     private var isQuery: Boolean = false
@@ -57,16 +59,22 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
         mContext = this
 
         initToolbar()
-        isFirst = true
-        isQuery = false
+        initData()
 
-        recyclerView = findViewById<View>(R.id.rec_product_list) as RecyclerView
         setRecyclerview()
         setSpinner()
     }
 
+    private fun initData(){
+        isFirst = true
+        isQuery = false
+
+        recyclerView = findViewById(R.id.rec_product_list)
+        searchView = findViewById(R.id.searchview)
+    }
+
     /*
-    툴바
+    툴바 & searchview
      */
     private fun initToolbar() {
         setSupportActionBar(toolbar)
@@ -74,42 +82,41 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        val searchView = findViewById<SearchView>(R.id.searchview)
+        searchView.setIconifiedByDefault(false)
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
+            override fun onQueryTextSubmit(query: String?): Boolean { //검색 submit 시
                 isQuery = true
-                adapter!!.removeItem()
+                adapter!!.removeItem()                  //쿼리한 내용으로 리스트를 갱신시킨다
                 queryProduct(defaultSkinType, query!!)
-                SharedPreferenceManager.setBoolean(mContext, "querySubmit", true)
-                SharedPreferenceManager.setBoolean(mContext, "noShowProgress", true)
+
+                SharedPreferenceManager.setBoolean(mContext, "noShowProgress", true) //프로그래스바 보이지 않게
                 return false
             }
 
             override fun onQueryTextChange(query: String?): Boolean {
-//                adapter!!.filter.filter(query)
-//                SharedPreferenceManager.setBoolean(mContext, "noShowProgress", true)
-//                Log.d("ljwLog_change", SharedPreferenceManager.getBoolean(mContext, "noShowProgress").toString())
                 return false
             }
         })
 
-        searchView.setIconifiedByDefault(false)
         val closeButton = searchView.findViewById<ImageView>(R.id.search_close_btn) //searchview의 x 버튼
         closeButton.setOnClickListener {
-            if (SharedPreferenceManager.getBoolean(mContext, "querySubmit")) { //submit 상태에서 x버튼 클릭 시
-                pageCount = 1
-                adapter!!.removeItem()                      //리스트를 다시 받아와 갱신시킨다
-                getProductList(defaultSkinType, pageCount)
+            isQuery = false
+            pageCount = 1
+            adapter!!.removeItem()                      //리스트를 다시 받아와 갱신시킨다
+            getProductList(defaultSkinType, pageCount)
 
-                SharedPreferenceManager.setBoolean(mContext, "querySubmit", false)
-                isQuery = false
-            } else {                                        //change 상태에서 x버튼 클릭 시
-                adapter!!.filter.filter("")      //이전데이터를 보여준다
-            }
-            SharedPreferenceManager.setBoolean(mContext, "noShowProgress", false)
-            searchView.setQuery("", false)
+            SharedPreferenceManager.setBoolean(mContext, "noShowProgress", false) //프로그래스바 보이게
+            setSearchviewClear()
         }
         return super.onCreateOptionsMenu(menu)
+    }
+
+    private fun setSearchviewClear(){
+        searchView.setQuery("", false) //searchview의 text칸을 비워준다.
+        searchView.clearFocus()
+        if(tv_noSearchData.visibility == View.VISIBLE){
+            tv_noSearchData.visibility = View.GONE
+        }
     }
 
     /*
@@ -175,7 +182,7 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
     /*
     retrofit 통신 && 파싱
      */
-    private fun getProductList(skin_type: String, page: Int) {
+    private fun getProductList(skin_type: String, page: Int) { //피부타입, 페이지에 따라 제품 리스트 가져오기
         disposable!!.add(
             iMyService!!.pagingList(skin_type, page)
                 .subscribeOn(Schedulers.io())
@@ -183,29 +190,32 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
                 .timeout(1, TimeUnit.SECONDS)
                 .retry()
                 .doOnError {
-                    Toast.makeText(this, "doOnError", Toast.LENGTH_SHORT).show()
+                    Log.e("ljwError","getProductList_doOnError")
                 }
                 .subscribe { response ->
                     val listArray: JSONArray = JSONObject(response).getJSONArray("body")
-                    Log.d("ljwLog-list", listArray.toString()) ///////////////////
+//                    Log.d("ljwLog-list", listArray.toString())
                     parsingProductList(listArray)
                 })
         adapter!!.notifyDataSetChanged()
     }
 
-    private fun queryProduct(skin_type: String, search: String) {
+    private fun queryProduct(skin_type: String, search: String) { //쿼리한 내용에 따라 제품 리스트 가져오기
         disposable!!.add(iMyService!!.queryProduct(skin_type, search)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .timeout(1, TimeUnit.SECONDS)
             .retry()
             .doOnError {
-                Toast.makeText(this, "doOnError", Toast.LENGTH_SHORT).show()
+                Log.e("ljwError","getProductList_doOnError")
             }
             .subscribe { response ->
-                val listArray: JSONArray = JSONObject(response).getJSONArray("body")
-                Log.d("ljwLog-query", listArray.toString()) ///////////////////
-                parsingProductList(listArray)
+                try{
+                    val listArray: JSONArray = JSONObject(response).getJSONArray("body")
+                    parsingProductList(listArray)
+                }catch (e : JSONException){ //"ㄴㅇ", "ㅇㅇㅇ" 등 으로 쿼리시 "데이터가 비어있습니다!"며 JSONException 발생시 제품이 없다
+                    tv_noSearchData.visibility = View.VISIBLE
+                }
             }
         )
         adapter!!.notifyDataSetChanged()
@@ -217,11 +227,7 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
             val listObject = listArray.getJSONObject(i)
             data.thumbnailImage = listObject.getString("thumbnail_image")
             data.productTitle = listObject.getString("title")
-            data.productPrice = makeCommaForNumber(
-                Integer.parseInt(
-                    listObject.getString("price").toString().replace(",", "")
-                )
-            ) + "원"
+            data.productPrice = makeCommaForNumber(Integer.parseInt(listObject.getString("price").toString().replace(",", ""))) + "원"
             adapter!!.addItem(data)
         }
         adapter!!.notifyDataSetChanged()
@@ -239,11 +245,7 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
     스피너
      */
     private fun setSpinner() {
-        val myAdapter = ArrayAdapter(
-            mContext,
-            android.R.layout.simple_spinner_dropdown_item,
-            resources.getStringArray(R.array.spinner_array)
-        )
+        val myAdapter = ArrayAdapter(mContext, android.R.layout.simple_spinner_dropdown_item, resources.getStringArray(R.array.spinner_array))
         spinner_skintype.adapter = myAdapter
         spinner_skintype.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
@@ -269,6 +271,9 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
     }
 
     private fun sortBySkinType(skin_type: String) {
+        SharedPreferenceManager.setBoolean(mContext, "noShowProgress", false)
+        setSearchviewClear()
+
         pageCount = 1
         defaultSkinType = skin_type
         adapter!!.removeItem()
@@ -286,5 +291,6 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
     override fun onStop() {
         super.onStop()
         disposable?.clear()
+        SharedPreferenceManager.setBoolean(mContext, "noShowProgress", false)
     }
 }

@@ -63,15 +63,23 @@
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
+    <TextView
+        android:id="@+id/tv_noSearchData"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|center_vertical"
+        android:text="@string/no_search_data_text"
+        android:visibility="gone" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rec_product_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
         android:layout_marginTop="-18dp"
-        android:layout_marginLeft="18dp"
-        android:layout_marginRight="18dp"
         android:layout_marginBottom="18dp"
+        android:layout_marginRight="18dp"
+        android:layout_marginLeft="18dp"
         android:layout_weight="4"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
