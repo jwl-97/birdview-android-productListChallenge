@@ -4,45 +4,53 @@
     android:layout_height="wrap_content"
     android:layout_weight="1"
     android:background="@color/white"
-    android:gravity="center"
+    android:gravity="center_horizontal"
     android:orientation="vertical">
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/iv_product_thumnail"
-        android:layout_width="172dp"
-        android:layout_height="172dp"
-        android:layout_marginTop="2dp"
-        android:adjustViewBounds="true"
-        android:background="@drawable/thumbnail_corner"
-        android:padding="10dp" />
-
     <LinearLayout
-        android:layout_width="172dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="12dp"
-        android:layout_weight="1"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tv_product_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="2"
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_product_thumnail"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_marginTop="2dp"
+            android:adjustViewBounds="true"
+            android:background="@drawable/thumbnail_corner"
+            android:padding="10dp" />
 
-            android:text="1"
-            android:textColor="@color/black"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tv_product_price"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            <TextView
+                android:id="@+id/tv_product_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:text="1"
+                android:textColor="@color/black"
+                android:textSize="15sp"
+                android:textStyle="bold" />
 
-            android:text="1"
-            android:textColor="@color/gray"
-            android:textStyle="bold" />
+            <TextView
+                android:id="@+id/tv_product_price"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:text="1"
+                android:textColor="@color/gray"
+                android:textStyle="bold" />
+        </LinearLayout>
+
     </LinearLayout>
 </LinearLayout>

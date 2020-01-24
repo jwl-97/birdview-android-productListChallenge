@@ -71,6 +71,7 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
 
         recyclerView = findViewById(R.id.rec_product_list)
         searchView = findViewById(R.id.searchview)
+        searchView.clearFocus()
     }
 
     /*
@@ -271,6 +272,11 @@ class MainActivity : AppCompatActivity(), OnItemClickListener {
     }
 
     private fun sortBySkinType(skin_type: String) {
+        Log.d("ljwLog", disposable!!.isDisposed.toString())
+        if(!disposable!!.isDisposed){
+            disposable?.clear()
+        }
+
         SharedPreferenceManager.setBoolean(mContext, "noShowProgress", false)
         setSearchviewClear()
 
